@@ -482,7 +482,15 @@
             // Update the timestamp
             document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
         }
-        
+        // Add at beginning of fetchMonthData function
+        document.getElementById(`${month}-table`).innerHTML = `
+            <tr>
+                <td colspan="7" class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading ${month.replace('-', ' ')} data...</p>
+                </td>
+            </tr>
+        `;
         // Fetch data for a specific month
         async function fetchMonthData(month, skipCache = false) {
             try {

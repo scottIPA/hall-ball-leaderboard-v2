@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hall Ball Championship Leaderboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            background-color: #f0f2f5;
+            color: #252423;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #6264A7;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            margin-bottom: 30px;
+            border-bottom: 5px solid #464775;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        h2 {
+            font-size: 32px;
+            margin: 30px 0 15px 0;
+            color: #6264A7;
+            border-bottom: 2px solid #6264A7;
+            padding-bottom: 10px;
+        }
+        .subtitle {
+            font-size: 24px;
+            color: #eaeaea;
+        }
+        .tab-container {
+            margin-bottom: 30px;
+        }
+        .tab-buttons {
+            display: flex;
+            overflow-x: auto;
+            border-bottom: 2px solid #6264A7;
+        }
+        .tab-button {
+            padding: 12px 24px;
+            background-color: #f0f2f5;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            outline: none;
+        }
+        .tab-button.active {
+            background-color: #6264A7;
+            color: white;
+        }
+        .tab-content {
+            display: none;
+            background-color: white;
+            border-radius: 0 0 10px 10px;
+            padding: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .tab-content.active {
+            display: block;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            font-size: 16px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background-color: #6264A7;
+            color: white;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        tr:hover {
+            background-color: #f0f0f0;
+        }
+        .rank {
+            width: 80px;
+            text-align: center;
+        }
+        .points, .placement {
+            text-align: center;
+            width: 100px;
+        }
+        .week {
+            text-align: center;
+            width: 100px;
+        }
+        .name {
+            width: auto;
+        }
+        .top-player {
+            font-weight: bold;
+            color: #6264A7;
+        }
+        footer {
+            text-align: center;
+            margin-top: 30px;
+            background-color: #464775;
+            color: white;
+            padding: 20px 0;
+            font-size: 14px;
+        }
+        .refresh-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .last-updated {
+            font-style: italic;
+            color: #888;
+        }
+        .refresh-button {
+            background-color: #6264A7;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .refresh-button:hover {
+            background-color: #464775;
+        }
+        .medal {
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            line-height: 30px;
+            text-align: center;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .gold {
+            background-color: #ffd700;
+            color: #333;
+        }
+        .silver {
+            background-color: #c0c0c0;
+            color: #333;
+        }
+        .bronze {
+            background-color: #cd7f32;
+            color: #333;
+        }
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 18px;
+            color: #666;
+        }
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 1px solid #f5c6cb;
+        }
+        .game-description {
+            background-color: #cce5ff;
+            color: #004085;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border: 1px solid #b8daff;
+        }
+        .week-data {
+            font-family: monospace;
+            font-weight: bold;
+            text-align: center;
+        }
+        .first-place {
+            color: #ffd700;
+        }
+        .second-place {
+            color: #6264A7;
+        }
+        .third-place {
+            color: #cd7f32;
+        }
+        .disqualified {
+            color: #d32f2f;
+        }
+        .no-attempt {
+            color: #999;
+            font-style: italic;
+        }
+        /* Spinner animation */
+        .spinner {
+            display: inline-block;
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top-color: #6264A7;
+            animation: spin 1s ease-in-out infinite;
+            margin: 0 auto 20px auto;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HALL BALL CHAMPIONSHIP</h1>
+            <div class="subtitle">Monthly Challenge 2025</div>
+        </header>
+        
+        <div id="main-view">
+            <div class="game-description">
+                <h3>How to Play</h3>
+                <p>Roll a ball down the hall once per week to see how close you can get to the end without hitting the door. Each player gets one attempt per week. Players who hit the end wall are disqualified for that week's competition.</p>
+                <p><strong>Weekly Placements:</strong> Numbers show placement each week (1st, 2nd, 3rd, etc.) | "DQ" means disqualified for hitting the wall | "N/A" means no attempt was made</p>
+                <p><strong>Points System:</strong> 1st place: 25pts, 2nd: 18pts, 3rd: 15pts, 4th: 12pts, 5th: 10pts, 6th: 8pts, 7th: 6pts, 8th: 4pts, 9th: 2pts, 10th+: 1pt, Disqualified: 0pts, No attempt: 0pts</p>
+            </div>
+            
+            <div class="tab-container">
+                <div class="tab-buttons" id="month-tabs">
+                    <button class="tab-button active" data-month="may-2025">May 2025</button>
+                    <button class="tab-button" data-month="jun-2025">June 2025</button>
+                    <button class="tab-button" data-month="jul-2025">July 2025</button>
+                </div>
+                
+                <!-- May 2025 Tab -->
+                <div id="may-2025" class="tab-content active">
+                    <h2>May 2025 Leaderboard</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="rank">Rank</th>
+                                <th class="name">Player</th>
+                                <th class="points">Total Points</th>
+                                <th class="week">Week 1<br>May 5-11</th>
+                                <th class="week">Week 2<br>May 12-18</th>
+                                <th class="week">Week 3<br>May 19-25</th>
+                                <th class="week">Week 4<br>May 26-Jun 1</th>
+                            </tr>
+                        </thead>
+                        <tbody id="may-2025-table">
+                            <tr>
+                                <td colspan="7" class="loading">
+                                    <div class="spinner"></div>
+                                    <p>Loading May 2025 data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- June 2025 Tab -->
+                <div id="jun-2025" class="tab-content">
+                    <h2>June 2025 Leaderboard</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="rank">Rank</th>
+                                <th class="name">Player</th>
+                                <th class="points">Total Points</th>
+                                <th class="week">Week 1<br>Jun 2-8</th>
+                                <th class="week">Week 2<br>Jun 9-15</th>
+                                <th class="week">Week 3<br>Jun 16-22</th>
+                                <th class="week">Week 4<br>Jun 23-29</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jun-2025-table">
+                            <tr>
+                                <td colspan="7" class="loading">
+                                    <div class="spinner"></div>
+                                    <p>Loading June 2025 data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- July 2025 Tab -->
+                <div id="jul-2025" class="tab-content">
+                    <h2>July 2025 Leaderboard</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th class="rank">Rank</th>
+                                <th class="name">Player</th>
+                                <th class="points">Total Points</th>
+                                <th class="week">Week 1<br>Jun 30-Jul 6</th>
+                                <th class="week">Week 2<br>Jul 7-13</th>
+                                <th class="week">Week 3<br>Jul 14-20</th>
+                                <th class="week">Week 4<br>Jul 21-27</th>
+                            </tr>
+                        </thead>
+                        <tbody id="jul-2025-table">
+                            <tr>
+                                <td colspan="7" class="loading">
+                                    <div class="spinner"></div>
+                                    <p>Loading July 2025 data...</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="refresh-container">
+                    <span class="last-updated">Last updated: <span id="lastUpdated">Loading...</span></span>
+                    <button id="refreshButton" class="refresh-button">Refresh Data</button>
+                </div>
+            </div>
+        </div>
+        
+        <footer>
+            <p>Hall Ball Championship — © 2025 Office Fun Committee</p>
+        </footer>
+    </div>
+
+    <script>
+        // Configuration
+        const config = {
+            // Replace these with your own published CSV URLs from Google Sheets
+            csvUrls: {
+                'may-2025': 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQOv0aPFsfatoU_-L31uo5yXwcHgeV5cHkGisTZ57O22jg1qJKsIsfv4P9XLvQOguaE3LfF4yrhYoAh/pub?output=csv',
+                'jun-2025': 'https://docs.google.com/spreadsheets/d/e/YOUR_JUNE_SHEET_ID/pub?gid=0&single=true&output=csv',
+                'jul-2025': 'https://docs.google.com/spreadsheets/d/e/YOUR_JULY_SHEET_ID/pub?gid=0&single=true&output=csv'
+            },
+            
+            // Set to true to use sample data, false to use Google Sheets data
+            useSampleData: false,
+            
+            // Detect current month dynamically
+            getCurrentMonth: function() {
+                const date = new Date();
+                const monthNames = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+                const currentMonthAbbr = monthNames[date.getMonth()];
+                const currentYear = date.getFullYear();
+                return `${currentMonthAbbr}-${currentYear}`;
+            },
+            
+            // Refresh interval in milliseconds (5 minutes)
+            refreshInterval: 5 * 60 * 1000
+        };
+
+        // Points system
+        const pointsSystem = {
+            1: 25,  // 1st place: 25 points
+            2: 18,  // 2nd place: 18 points
+            3: 15,  // 3rd place: 15 points
+            4: 12,  // 4th place: 12 points
+            5: 10,  // 5th place: 10 points
+            6: 8,   // 6th place: 8 points
+            7: 6,   // 7th place: 6 points
+            8: 4,   // 8th place: 4 points
+            9: 2,   // 9th place: 2 points
+            10: 1,  // 10th+ place: 1 point
+            'DQ': 0, // Disqualified: 0 points
+            'N/A': 0 // No attempt: 0 points
+        };
+
+        // Sample data for testing
+        const sampleMonthlyData = {
+            'may-2025': [
+                { player: "Laura Adams", week1: "3", week2: "1", week3: "DQ", week4: "2" },
+                { player: "Beth Broyles", week1: "1", week2: "5", week3: "2", week4: "4" },
+                { player: "Pam Burdine", week1: "2", week2: "3", week3: "1", week4: "1" },
+                { player: "Adam Geisen", week1: "5", week2: "2", week3: "3", week4: "7" },
+                { player: "Mari Handy", week1: "7", week2: "4", week3: "8", week4: "3" },
+                { player: "Dave Heinzel", week1: "DQ", week2: "7", week3: "4", week4: "5" },
+                { player: "Susan Homes", week1: "6", week2: "8", week3: "5", week4: "6" },
+                { player: "Chan-Tell King-Beckwith", week1: "4", week2: "6", week3: "7", week4: "N/A" },
+                { player: "Jason Leahy", week1: "8", week2: "DQ", week3: "6", week4: "8" }
+            ],
+            'jun-2025': [
+                { player: "Laura Adams", week1: "2", week2: "", week3: "", week4: "" },
+                { player: "Beth Broyles", week1: "3", week2: "", week3: "", week4: "" },
+                { player: "Pam Burdine", week1: "1", week2: "", week3: "", week4: "" },
+                { player: "Adam Geisen", week1: "6", week2: "", week3: "", week4: "" },
+                { player: "Mari Handy", week1: "4", week2: "", week3: "", week4: "" },
+                { player: "Dave Heinzel", week1: "5", week2: "", week3: "", week4: "" },
+                { player: "Susan Homes", week1: "7", week2: "", week3: "", week4: "" },
+                { player: "Chan-Tell King-Beckwith", week1: "DQ", week2: "", week3: "", week4: "" },
+                { player: "Jason Leahy", week1: "8", week2: "", week3: "", week4: "" }
+            ],
+            'jul-2025': []
+        };
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Detect current month
+            const currentMonth = config.getCurrentMonth();
+            
+            // Set up tab navigation with current month as default
+            setupTabs(currentMonth);
+            
+            // Initial data load
+            fetchAllMonthsData();
+            
+            // Set up refresh button
+            document.getElementById('refreshButton').addEventListener('click', function() {
+                console.log("Manual refresh triggered");
+                fetchAllMonthsData(true);
+            });
+            
+            // Set up auto-refresh
+            setInterval(() => fetchAllMonthsData(false), config.refreshInterval);
+        });
+        
+        // Setup tab navigation with current month as default
+        function setupTabs(defaultActiveMonth) {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            let foundActiveTab = false;
+            
+            // First check if the current month exists in our tabs
+            tabButtons.forEach(button => {
+                const monthId = button.getAttribute('data-month');
+                if (monthId === defaultActiveMonth) {
+                    activateTab(button, monthId);
+                    foundActiveTab = true;
+                }
+            });
+            
+            // If current month tab doesn't exist, activate the first tab
+            if (!foundActiveTab && tabButtons.length > 0) {
+                const firstButton = tabButtons[0];
+                const firstMonthId = firstButton.getAttribute('data-month');
+                activateTab(firstButton, firstMonthId);
+            }
+            
+            // Add click event listeners
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const monthId = this.getAttribute('data-month');
+                    activateTab(this, monthId);
+                });
+            });
+        }
+        
+        // Activate a specific tab
+        function activateTab(button, monthId) {
+            // Remove active class from all buttons and content divs
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(div => div.classList.remove('active'));
+            
+            // Add active class to specified button
+            button.classList.add('active');
+            
+            // Show corresponding content div
+            const contentDiv = document.getElementById(monthId);
+            if (contentDiv) {
+                contentDiv.classList.add('active');
+            }
+        }
+        
+        // Fetch all months data
+        function fetchAllMonthsData(skipCache = false) {
+            // Get all months from the configured CSV URLs
+            Object.keys(config.csvUrls).forEach(month => {
+                fetchMonthData(month, skipCache);
+            });
+            
+            // Update the timestamp
+            document.getElementById('lastUpdated').textContent = new Date().toLocaleString();
+        }
+        
+        // Fetch data for a specific month
+        async function fetchMonthData(month, skipCache = false) {
+            try {
+                // Show loading state
+                document.getElementById(`${month}-table`).innerHTML = `
+                    <tr>
+                        <td colspan="7" class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading ${month.replace('-', ' ')} data...</p>
+                        </td>
+                    </tr>
+                `;
+                
+                let monthData = [];
+                
+                if (config.useSampleData) {
+                    // Use sample data for testing
+                    console.log(`Using sample data for ${month}`);
+                    monthData = sampleMonthlyData[month] || [];
+                } else {
+                    try {
+                        // Add cache-busting to prevent caching
+                        let csvUrl = config.csvUrls[month];
+                        if (skipCache) {
+                            const timestamp = new Date().getTime();
+                            if (csvUrl.includes('?')) {
+                                csvUrl += `&_t=${timestamp}`;
+                            } else {
+                                csvUrl += `?_t=${timestamp}`;
+                            }
+                        }
+                        
+                        console.log(`Fetching data for ${month} from ${csvUrl}`);
+                        
+                        // Fetch CSV data
+                        const response = await fetch(csvUrl);
+                        if (!response.ok) {
+                            throw new Error(`Failed to fetch CSV for ${month}: ${response.status} ${response.statusText}`);
+                        }
+                        
+                        const csvText = await response.text();
+                        console.log(`CSV data received for ${month} (${csvText.length} bytes)`);
+                        console.log(`CSV preview: ${csvText.substring(0, 200)}...`);
+                        
+                        // Parse CSV
+                        const rows = csvText.split('\n');
+                        if (rows.length < 2) {
+                            throw new Error(`No data in CSV for ${month}`);
+                        }
+                        
+                        // Process header row to find column indexes
+                        const headers = rows[0].split(',').map(h => h.trim());
+                        console.log(`CSV headers for ${month}:`, headers);
+                        
+                        // Find column indexes (with flexible matching for column names)
+                        const playerColIndex = findColumnIndex(headers, ['player', 'player name', 'name', 'playername']);
+                        const week1ColIndex = findColumnIndex(headers, ['week 1', 'week1', 'week 1 (may 5-11)', 'w1']);
+                        const week2ColIndex = findColumnIndex(headers, ['week 2', 'week2', 'week 2 (may 12-18)', 'w2']);
+                        const week3ColIndex = findColumnIndex(headers, ['week 3', 'week3', 'week 3 (may 19-25)', 'w3']);
+                        const week4ColIndex = findColumnIndex(headers, ['week 4', 'week4', 'week 4 (may 26-jun 1)', 'w4']);
+                        
+                        console.log(`Column indexes - Player: ${playerColIndex}, Week1: ${week1ColIndex}, Week2: ${week2ColIndex}, Week3: ${week3ColIndex}, Week4: ${week4ColIndex}`);
+                        
+                        // Check if essential columns were found
+                        if (playerColIndex === -1) {
+                            throw new Error(`Could not find player name column in CSV for ${month}`);
+                        }
+                        
+                        // Process data rows
+                        for (let i = 1; i < rows.length; i++) {
+                            const rowData = rows[i].split(',').map(cell => cell.trim());
+                            
+                            // Skip empty rows
+                            if (rowData.length <= 1 || !rowData[playerColIndex]) {
+                                continue;
+                            }
+                            
+                            // Create player object with placement data
+                            const player = {
+                                player: rowData[playerColIndex],
+                                week1: getWeekValue(rowData, week1ColIndex),
+                                week2: getWeekValue(rowData, week2ColIndex), 
+                                week3: getWeekValue(rowData, week3ColIndex),
+                                week4: getWeekValue(rowData, week4ColIndex)
+                            };
+                            
+                            monthData.push(player);
+                        }
+                        
+                        console.log(`Loaded ${monthData.length} players for ${month}:`, monthData);
+                    } catch (apiError) {
+                        console.error(`CSV fetch/parse failed for ${month}:`, apiError);
+                        
+                        // Fall back to sample data when API fails
+                        console.log(`Falling back to sample data for ${month}`);
+                        monthData = sampleMonthlyData[month] || [];
+                    }
+                }
+                
+                // Calculate standings and display
+                const standings = calculateMonthStandings(monthData);
+                displayMonthStandings(month, standings);
+                
+            } catch (error) {
+                console.error(`Error fetching data for ${month}:`, error);
+                document.getElementById(`${month}-table`).innerHTML = `
+                    <tr>
+                        <td colspan="7" class="error">
+                            <p>Error loading data for ${month}: ${error.message}</p>
+                            <p>Please check your Google Sheet publishing settings and column names.</p>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // Helper function to find column index with multiple possible names
+        function findColumnIndex(headers, possibleNames) {
+            for (const name of possibleNames) {
+                const index = headers.findIndex(h => h.toLowerCase() === name.toLowerCase());
+                if (index !== -1) {
+                    return index;
+                }
+            }
+            return -1; // Column not found
+        }
+        
+        // Helper function to get week value with validation
+        function getWeekValue(rowData, columnIndex) {
+            // If column wasn't found or index is out of bounds
+            if (columnIndex === -1 || columnIndex >= rowData.length) {
+                return "N/A";
+            }
+            
+            const value = rowData[columnIndex].trim();
+            
+            // Handle empty cells
+            if (!value) {
+                return "N/A";
+            }
+            
+            // Return the actual value (number, "DQ", etc.)
+            return value;
+        }
+        
+        // Calculate standings for a month
+        function calculateMonthStandings(monthData) {
+            // Calculate total points for each player
+            const playerStandings = monthData.map(player => {
+                const weeks = ['week1', 'week2', 'week3', 'week4'];
+                let totalPoints = 0;
+                
+                // Calculate points for each week
+                weeks.forEach(week => {
+                    const placement = player[week];
+                    let points = 0;
+                    
+                    if (placement === "N/A") {
+                        points = pointsSystem['N/A']; // No points for no attempt
+                    } else if (placement === "DQ") {
+                        points = pointsSystem['DQ']; // No points for disqualification
+                    } else if (!isNaN(parseInt(placement))) {
+                        // Add points based on numeric placement
+                        const place = parseInt(placement);
+                        points = place <= 10 ? pointsSystem[place] : pointsSystem[10];
+                    }
+                    
+                    console.log(`Player ${player.player}, ${week}: ${placement} = ${points} points`);
+                    totalPoints += points;
+                });
+                
+                return {
+                    player: player.player,
+                    totalPoints: totalPoints,
+                    week1: player.week1,
+                    week2: player.week2,
+                    week3: player.week3,
+                    week4: player.week4
+                };
+            });
+            
+            // Sort by total points (highest first)
+            return playerStandings.sort((a, b) => b.totalPoints - a.totalPoints);
+        }
+        
+        // Display standings for a month
+        function displayMonthStandings(month, standings) {
+            const tableBody = document.getElementById(`${month}-table`);
+            tableBody.innerHTML = '';
+            
+            // DEBUG: Log the standings data before displaying
+            console.log(`${month} standings data:`, standings);
+            
+            if (standings.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center;">No data recorded yet for ${month.replace('-', ' ')}</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            standings.forEach((player, index) => {
+                const row = document.createElement('tr');
+                
+                // Apply top player styling
+                if (index < 3) {
+                    row.classList.add('top-player');
+                }
+                
+                // DEBUG: Log each player's weekly data
+                console.log(`Player: ${player.player}, Week1: ${player.week1}, Week2: ${player.week2}, Week3: ${player.week3}, Week4: ${player.week4}, Total: ${player.totalPoints}`);
+                
+                // Format week data with appropriate styling
+                const weekFormatted = {
+                    week1: formatWeekCell(player.week1),
+                    week2: formatWeekCell(player.week2),
+                    week3: formatWeekCell(player.week3),
+                    week4: formatWeekCell(player.week4)
+                };
+                
+                row.innerHTML = `
+                    <td class="rank">
+                        ${index === 0 ? '<span class="medal gold">1</span>' : 
+                          index === 1 ? '<span class="medal silver">2</span>' : 
+                          index === 2 ? '<span class="medal bronze">3</span>' : index + 1}
+                    </td>
+                    <td class="name">${player.player}</td>
+                    <td class="points">${player.totalPoints}</td>
+                    <td class="week-data">${weekFormatted.week1}</td>
+                    <td class="week-data">${weekFormatted.week2}</td>
+                    <td class="week-data">${weekFormatted.week3}</td>
+                    <td class="week-data">${weekFormatted.week4}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        // Format week cell with appropriate styling
+        function formatWeekCell(placement) {
+            if (placement === "N/A") {
+                return `<span class="no-attempt">N/A</span>`;
+            } else if (placement === "DQ") {
+                return `<span class="disqualified">DQ</span>`;
+            } else if (placement === "1") {
+                return `<span class="first-place">1</span>`;
+            } else if (placement === "2") {
+                return `<span class="second-place">2</span>`;
+            } else if (placement === "3") {
+                return `<span class="third-place">3</span>`;
+            } else {
+                return placement;
+            }
+        }
+    </script>
+</body>
+</html>
